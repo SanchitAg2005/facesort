@@ -10,6 +10,9 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "FaceSort - Sort Friends by Photo",
+    icons: {
+    icon: "/favicon.ico",
+  },
   description: "A luxury app for organizing and sorting photos with your friends",
 }
 
