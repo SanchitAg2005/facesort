@@ -24,7 +24,7 @@ export function PrivacyModal({ isOpen, onAccept, onDecline }: PrivacyModalProps)
 
         {/* SCROLLABLE CONTENT */}
         <ScrollArea className="flex-1 px-6 py-4 overflow-y-auto">
-          <div className="space-y-4 text-sm text-muted-foreground">
+          <div className="space-y-4 text-sm text-popover">
             <p>
               We respect your privacy. This app processes images only for the
               purpose of sorting and delivery.
