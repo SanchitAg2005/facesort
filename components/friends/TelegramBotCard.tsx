@@ -1,17 +1,22 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
 
-const BOT_LINK = "https://t.me/FaceSort_Bot" // replace if needed
+const BOT_LINK = "https://t.me/FaceSort_Bot"
 
 export default function TelegramBotCard() {
-    const [copied, setCopied] = useState(false)
+    const sendOnWhatsApp = () => {
+        const message = `Hey   
+Here’s the FaceSort Telegram bot,  
 
-    const copyLink = async () => {
-        await navigator.clipboard.writeText(BOT_LINK)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+ ${BOT_LINK}  
+
+Please start the bot and share your chat ID with me so I can send you photos automatically .`
+
+        const encodedMessage = encodeURIComponent(message)
+        const whatsappUrl = `https://wa.me/?text=${encodedMessage}`
+
+        window.open(whatsappUrl, "_blank")
     }
 
     return (
@@ -22,8 +27,8 @@ export default function TelegramBotCard() {
                 Ask your friend to start the bot
             </p>
 
-            <Button onClick={copyLink} className="w-full">
-                {copied ? "Link Copied ✅" : "Copy Bot Link"}
+            <Button onClick={sendOnWhatsApp} className="w-full">
+                Share Link
             </Button>
         </div>
     )
