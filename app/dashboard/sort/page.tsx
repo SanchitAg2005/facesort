@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import FriendSelectCard from "@/components/sort/FriendSelectCard"
 import UploadCard from "@/components/sort/UploadCard"
+import { toast } from "sonner"
 
 
 export default function SortPage() {
@@ -29,25 +30,30 @@ export default function SortPage() {
     return () => clearInterval(i)
   }, [])
 
-  const startJob = async () => {
-    setLoading(true)
-    const fd = new FormData()
+ const startJob = async () => {
+  setLoading(true)
+  const fd = new FormData()
 
-    selected.forEach(id => fd.append("friend_ids", id))
-    files.forEach(f => fd.append("images", f))
+  selected.forEach(id => fd.append("friend_ids", id))
+  files.forEach(f => fd.append("images", f))
 
-    const res = await fetch("/api/jobs", { method: "POST", body: fd })
-    setLoading(false)
+  const res = await fetch("/api/jobs", { method: "POST", body: fd })
+  setLoading(false)
 
-    if (!res.ok) {
-      alert("Failed to create job")
-      return
-    }
-
-    setSelected([])
-    setFiles([])
-    setStep(1)
+  if (!res.ok) {
+    toast.error("Failed to create job")
+    return
   }
+
+  toast.success("Sorting started", {
+    description: "You can track progress in History",
+  })
+
+  setSelected([])
+  setFiles([])
+  setStep(1)
+}
+
 
   return (
     <div className="p-4 space-y-6">
