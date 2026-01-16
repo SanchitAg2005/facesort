@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Trash2, Pencil, WifiOff } from "lucide-react"
-
+import FriendTutorial from "@/components/friends/FriendTutorial"
 import FriendCard from "@/components/friends/FriendCard"
 import AddFriendModal from "@/components/friends/AddFriendModal"
 import EditFriendModal from "@/components/friends/EditFriendModal"
@@ -96,7 +96,7 @@ export default function FriendsPage() {
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">
             No friends yet. Add your first friend.
-          </p>
+          </p>  <FriendTutorial />
         </Card>
       ) : (
         <div className="grid gap-4">
