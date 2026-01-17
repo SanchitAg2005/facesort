@@ -5,55 +5,76 @@ import { Button } from "@/components/ui/button"
 import FriendSelectCard from "@/components/sort/FriendSelectCard"
 import UploadCard from "@/components/sort/UploadCard"
 import { toast } from "sonner"
-
+import { supabaseClient } from "@/lib/supabaseClient"
+import { useSession } from "next-auth/react"
 
 export default function SortPage() {
+  const { data: session } = useSession()
+
   const [step, setStep] = useState<1 | 2>(1)
   const [friends, setFriends] = useState<any[]>([])
   const [selected, setSelected] = useState<string[]>([])
   const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
-  const [jobs, setJobs] = useState<any[]>([])
 
   useEffect(() => {
     fetch("/api/friends").then(r => r.json()).then(setFriends)
   }, [])
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      const res = await fetch("/api/jobs")
-      if (res.ok) setJobs(await res.json())
+  const startJob = async () => {
+    if (!session?.user?.id) {
+      toast.error("Not authenticated")
+      return
     }
 
-    fetchJobs()
-    const i = setInterval(fetchJobs, 4000)
-    return () => clearInterval(i)
-  }, [])
+    if (!files.length || !selected.length) {
+      toast.error("Please select friends and photos")
+      return
+    }
 
- const startJob = async () => {
-  setLoading(true)
-  const fd = new FormData()
+    try {
+      setLoading(true)
 
-  selected.forEach(id => fd.append("friend_ids", id))
-  files.forEach(f => fd.append("images", f))
+      const userId = session.user.id
+      const image_paths: string[] = []
 
-  const res = await fetch("/api/jobs", { method: "POST", body: fd })
-  setLoading(false)
+      for (const file of files) {
+        const path = `users/${userId}/jobs/${crypto.randomUUID()}.jpg`
 
-  if (!res.ok) {
-    toast.error("Failed to create job")
-    return
+        const { error } = await supabaseClient.storage
+          .from("facesort")
+          .upload(path, file, { upsert: false })
+
+        if (error) throw error
+
+        image_paths.push(path)
+      }
+
+      const res = await fetch("/api/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          friend_ids: selected,
+          image_paths,
+        }),
+      })
+
+      if (!res.ok) throw new Error("Job creation failed")
+
+      toast.success("Sorting started", {
+        description: "You can track progress in History",
+      })
+
+      setSelected([])
+      setFiles([])
+      setStep(1)
+    } catch (err) {
+      console.error(err)
+      toast.error("Failed to create job")
+    } finally {
+      setLoading(false)
+    }
   }
-
-  toast.success("Sorting started", {
-    description: "You can track progress in History",
-  })
-
-  setSelected([])
-  setFiles([])
-  setStep(1)
-}
-
 
   return (
     <div className="p-4 space-y-6">
@@ -61,10 +82,17 @@ export default function SortPage() {
 
       {step === 1 && (
         <>
-          <FriendSelectCard friends={friends} selected={selected} onToggle={id =>
-            setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id])
-          } />
-          <Button disabled={!selected.length} onClick={() => setStep(2)}>Next</Button>
+          <FriendSelectCard
+            friends={friends}
+            selected={selected}
+            onToggle={id =>
+              setSelected(s =>
+                s.includes(id) ? s.filter(x => x !== id) : [...s, id])
+            }
+          />
+          <Button disabled={!selected.length} onClick={() => setStep(2)}>
+            Next
+          </Button>
         </>
       )}
 
@@ -77,8 +105,6 @@ export default function SortPage() {
           loading={loading}
         />
       )}
-
-
     </div>
   )
 }
